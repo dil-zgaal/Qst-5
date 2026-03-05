@@ -102,6 +102,87 @@ Client A (v5)                    Server                    Client B (v5)
     │                               │                           │
 ```
 
+### Complex Scenario: Multiple users editing concurrently
+
+```
+Client A (v10)              Client B (v10)              Server              Client C (v10)
+    │                           │                          │                      │
+    │ PATCH v=10                │                          │                      │
+    │ {title: "A's Title"}      │                          │                      │
+    ├─────────────────────────────────────────────────────►│                      │
+    │                           │ PATCH v=10               │                      │
+    │                           │ {description: "B's Desc"}│                      │
+    │                           ├─────────────────────────►│                      │
+    │                           │                          │ Store Cmd → v11      │
+    │                           │                          │ Store Cmd → v12      │
+    │                           │                          │                      │
+    │                           │                          │ Process v11          │
+    │                           │                          │ Delta (v10→v11)      │
+    │ ◄────────────────────────────────────────────────────┤                      │
+    │ Delta {                   │                          │                      │
+    │   fromVersion: 10,        │                          │                      │
+    │   toVersion: 11,          │                          │                      │
+    │   title: Set("A's Title") │                          │                      │
+    │ }                         │                          │                      │
+    │ [Local state now v11]     │                          │                      │
+    │                           │                          │                      │
+    │                           │                          │ Process v12          │
+    │                           │                          │ Delta (v11→v12)      │
+    │                           │ ◄────────────────────────┤                      │
+    │                           │ Delta {                  │                      │
+    │                           │   fromVersion: 11,       │                      │
+    │                           │   toVersion: 12,         │                      │
+    │                           │   description: Set("B's Desc")                  │
+    │                           │ }                        │                      │
+    │                           │ [Local state now v12]    │                      │
+    │                           │                          │                      │
+    │                           │                          │  PATCH v=10          │
+    │                           │                          │  {title: "C's Title"}│
+    │                           │                          │◄─────────────────────┤
+    │                           │                          │ Store Cmd → v13      │
+    │                           │                          │ Process v13          │
+    │                           │                          │ Delta (v12→v13)      │
+    │                           │                          ├─────────────────────►│
+    │                           │                          │      Delta {         │
+    │                           │                          │ fromVersion: 12,     │
+    │                           │                          │ toVersion: 13,       │
+    │                           │                          │ title: Set("C's Title")
+    │                           │                          │      }               │
+    │                           │                          │ [Local state now v13]│
+    │                           │                          │                      │
+    │ GET /delta?from=11&to=13  │                          │                      │
+    ├─────────────────────────────────────────────────────►│                      │
+    │ ◄────────────────────────────────────────────────────┤                      │
+    │ Aggregated Delta {        │                          │                      │
+    │   fromVersion: 11,        │                          │                      │
+    │   toVersion: 13,          │                          │                      │
+    │   title: Set("C's Title"),          ◄── Includes changes from B and C       │
+    │   description: Set("B's Desc")      ◄── Client A gets both B's and C's edits│
+    │ }                         │                          │                      │
+    │ [Local state now v13]     │                          │                      │
+    │                           │                          │                      │
+    │                           │ GET /delta?from=12&to=13 │                      │
+    │                           ├─────────────────────────►│                      │
+    │                           │ ◄────────────────────────┤                      │
+    │                           │ Aggregated Delta {       │                      │
+    │                           │   fromVersion: 12,       │                      │
+    │                           │   toVersion: 13,         │                      │
+    │                           │   title: Set("C's Title") ◄── Only C's change   │
+    │                           │ }                        │                      │
+    │                           │ [Local state now v13]    │                      │
+```
+
+**Key observations:**
+
+1. **All three clients start at v10** - Same baseline
+2. **Commands queued immediately** - v11, v12, v13 assigned instantly
+3. **Processing happens asynchronously** - Commands processed in order
+4. **Each client gets delta from their request** - Immediate feedback
+5. **Client A behind by 2 versions** - Needs changes from B and C
+6. **Aggregated delta merges changes** - Single delta (v11→v13) contains both updates
+7. **Last-write-wins on conflict** - C's title overwrites A's title (both edited title)
+8. **No conflicts on different fields** - B's description preserved
+
 ### Key Points
 
 1. **Client sends command with current version** - Optimistic concurrency control
