@@ -5,7 +5,14 @@
       "Bash(mv:*)",
       "Bash(rm:*)",
       "Bash(mkdir:*)",
-      "Bash(mv Question:*)"
+      "Bash(mv Question:*)",
+      "Bash(pnpm install:*)",
+      "Bash(npx tsc:*)",
+      "Bash(cp:*)",
+      "Bash(do sed:*)",
+      "Bash(sed:*)",
+      "Bash(tasklist:*)",
+      "Bash(taskkill:*)"
     ]
   }
 }
