@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
   <ItemGroup>
-    <ProjectReference Include="..\Questionnaire\Questionnaire.Domain\Questionnaire.Domain.csproj" />
+    <ProjectReference Include="..\Questionnaires\Questionnaires.Domain\Questionnaires.Domain.csproj" />
   </ItemGroup>
 
   <PropertyGroup>

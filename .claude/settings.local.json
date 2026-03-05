@@ -12,7 +12,10 @@
       "Bash(do sed:*)",
       "Bash(sed:*)",
       "Bash(tasklist:*)",
-      "Bash(taskkill:*)"
+      "Bash(taskkill:*)",
+      "Bash(mv Questionnaire:*)",
+      "Bash(cat:*)",
+      "Read(//tmp/**)"
     ]
   }
 }

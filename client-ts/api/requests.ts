@@ -1,4 +1,5 @@
 import { Question } from '../model/question';
+import { UpdateQuestionnaireProperty } from '../model/commands';
 
 export interface CreateQuestionnaireRequest {
   title: string;
@@ -6,7 +7,5 @@ export interface CreateQuestionnaireRequest {
   content?: Question[];
 }
 
-export interface UpdateQuestionnaireRequest {
-  title: string;
-  description?: string | null;
-}
+// For update, we now use the command directly
+export type UpdateQuestionnaireRequest = Omit<UpdateQuestionnaireProperty, 'type' | 'id'>;
