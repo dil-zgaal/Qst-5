@@ -19,24 +19,6 @@ public class InMemoryQuestionnaireRepository : IQuestionnaireRepository
         _logger = logger;
     }
 
-    private Questionnaire? Deserialize(string json)
-    {
-        try
-        {
-            return JsonSerializer.Deserialize<Questionnaire>(json);
-        }
-        catch (JsonException ex)
-        {
-            _logger.LogError(ex, "Failed to deserialize questionnaire from JSON");
-            return null;
-        }
-    }
-
-    private string Serialize(Questionnaire questionnaire)
-    {
-        return JsonSerializer.Serialize(questionnaire);
-    }
-
     public Task<IReadOnlyList<QuestionnaireMeta>> GetAllMetaAsync(CancellationToken cancellationToken = default)
     {
         _logger.LogDebug("Getting all questionnaire metadata. Count: {Count}", _store.Count);
@@ -50,9 +32,11 @@ public class InMemoryQuestionnaireRepository : IQuestionnaireRepository
             .Select(q => new QuestionnaireMeta
             {
                 Id = q.Id,
+                Version = q.Version,
                 Title = q.Title,
                 Description = q.Description,
-                CreatedAt = q.CreatedAt
+                CreatedAt = q.CreatedAt,
+                UpdatedAt = q.UpdatedAt,
             })
             .ToList()
             .AsReadOnly();
@@ -85,7 +69,8 @@ public class InMemoryQuestionnaireRepository : IQuestionnaireRepository
             Title = questionnaire.Title,
             Description = questionnaire.Description,
             Content = new List<Question>(questionnaire.Content), // Deep copy the list
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = DateTime.UtcNow,
+            Version = 0 // New questionnaires start at version 0
         };
 
         // Serialize to JSON before storing
@@ -119,6 +104,7 @@ public class InMemoryQuestionnaireRepository : IQuestionnaireRepository
                     existing.Title = questionnaire.Title;
                     existing.Description = questionnaire.Description;
                     existing.Content = new List<Question>(questionnaire.Content); // Deep copy
+                    existing.Version = questionnaire.Version;
                 }
                 return Serialize(existing ?? questionnaire);
             });
@@ -148,9 +134,22 @@ public class InMemoryQuestionnaireRepository : IQuestionnaireRepository
         return Task.FromResult(removed);
     }
 
-    public Task<bool> ExistsAsync(QuestionnaireId id, CancellationToken cancellationToken = default)
+    private Questionnaire? Deserialize(string json)
     {
-        var exists = _store.ContainsKey(id);
-        return Task.FromResult(exists);
+        try
+        {
+            return JsonSerializer.Deserialize<Questionnaire>(json);
+        }
+        catch (JsonException ex)
+        {
+            _logger.LogError(ex, "Failed to deserialize questionnaire from JSON");
+            return null;
+        }
     }
+
+    private string Serialize(Questionnaire questionnaire)
+    {
+        return JsonSerializer.Serialize(questionnaire);
+    }
+
 }

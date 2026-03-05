@@ -6,7 +6,9 @@ namespace Questionnaires.Contract.Models;
 public class QuestionnaireMeta
 {
     public required QuestionnaireId Id { get; init; }
+    public required long Version { get; init; }
     public required string Title { get; init; }
-    public string? Description { get; init; }
+    public required string? Description { get; init; }
     public required DateTime CreatedAt { get; init; }
+    public required DateTime? UpdatedAt { get; init; }
 }

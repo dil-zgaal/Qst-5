@@ -31,9 +31,4 @@ public interface IQuestionnaireRepository
     /// Delete a questionnaire by ID
     /// </summary>
     Task<bool> DeleteAsync(QuestionnaireId id, CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Check if a questionnaire exists
-    /// </summary>
-    Task<bool> ExistsAsync(QuestionnaireId id, CancellationToken cancellationToken = default);
 }

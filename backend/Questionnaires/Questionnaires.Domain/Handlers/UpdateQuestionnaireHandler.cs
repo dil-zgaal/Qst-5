@@ -19,11 +19,11 @@ public class UpdateQuestionnaireHandler : IUpdateQuestionnaireHandler
         _logger = logger;
     }
 
-    public async Task<QuestionnaireDelta?> HandleAsync(QuestionnaireId id, UpdateCommand command)
+    public async Task<QuestionnaireDelta?> HandleAsync(QuestionnaireId id, long fromVersion, UpdateCommand command)
     {
-        _logger.LogInformation("Updating questionnaire {Id} with command {CommandType}", id, command.Type);
+        _logger.LogInformation("Updating questionnaire {Id} with command {CommandType} from version {FromVersion}",
+            id, command.Type, fromVersion);
 
-        var delta = await _updateService.UpdateAsync(id, command);
-        return delta;
+        return await _updateService.UpdateAsync(id, fromVersion, command);
     }
 }

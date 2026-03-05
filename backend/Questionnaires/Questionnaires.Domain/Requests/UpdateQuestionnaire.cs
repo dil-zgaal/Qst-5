@@ -12,11 +12,15 @@ public static class UpdateQuestionnaire
 {
     public static RouteHandlerBuilder MapUpdateQuestionnaire(this RouteGroupBuilder group)
     {
-        return group.MapPatch("/{id}", async Task<Results<Ok<QuestionnaireUpdatedResponse>, NotFound, BadRequest<string>>> ([FromRoute] QuestionnaireId id, [FromBody] UpdateQuestionnaireProperty command, IUpdateQuestionnaireHandler handler) =>
+        return group.MapPatch("/{id}", async Task<Results<Ok<QuestionnaireUpdatedResponse>, NotFound, BadRequest<string>>> (
+            [FromRoute] QuestionnaireId id,
+            [FromQuery] long version,
+            [FromBody] UpdateQuestionnaireProperty command,
+            IUpdateQuestionnaireHandler handler) =>
         {
             try
             {
-                var delta = await handler.HandleAsync(id, command);
+                var delta = await handler.HandleAsync(id, version, command);
 
                 if (delta == null)
                 {

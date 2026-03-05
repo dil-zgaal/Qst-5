@@ -1,3 +1,5 @@
+using Core.Model.Delta;
+
 namespace Questionnaires.Contract.Models.Commands;
 
 /// <summary>
@@ -8,6 +10,6 @@ public class UpdateQuestionnaireProperty : UpdateCommand
     public const string CommandType = "updateProperty";
     public override string Type => CommandType;
 
-    public string? Title { get; init; }
-    public string? Description { get; init; }
+    public required string Title { get; init; }
+    public required string? Description { get; init; }
 }

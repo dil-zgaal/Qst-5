@@ -2,9 +2,11 @@ namespace Questionnaires.Contract.Models;
 
 public class TextQuestion : Question
 {
-    public override string QuestionType => "Text";
+    public const string QUESTION_TYPE = "Text";
+    public override string QuestionType => QUESTION_TYPE;
 }
 
 public class TextQuestionDelta : QuestionDelta
 {
+    public override string QuestionType => TextQuestion.QUESTION_TYPE;
 }

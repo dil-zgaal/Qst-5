@@ -5,5 +5,5 @@ namespace Questionnaires.Contract.Handlers;
 
 public interface IUpdateQuestionnaireHandler
 {
-    Task<QuestionnaireDelta?> HandleAsync(QuestionnaireId id, UpdateCommand command);
+    Task<QuestionnaireDelta?> HandleAsync(QuestionnaireId id, long fromVersion, UpdateCommand command);
 }

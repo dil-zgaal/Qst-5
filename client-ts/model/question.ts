@@ -1,4 +1,4 @@
-import { Patchable, PatchableArray } from './delta';
+import { Patchable, PatchableNullable, PatchableArray } from './delta';
 
 export type QuestionType = 'Message' | 'Text' | 'Number' | 'Email';
 
@@ -31,13 +31,13 @@ export type Question = MessageQuestion | TextQuestion | NumberQuestion | EmailQu
 export class QuestionDelta {
   id: string;
   title: Patchable<string>;
-  description: Patchable<string | null>;
+  description: PatchableNullable<string>;
   subQuestions?: PatchableArray<QuestionDelta>;
 
   constructor(id: string) {
     this.id = id;
     this.title = Patchable.notGiven<string>();
-    this.description = Patchable.notGiven<string | null>();
+    this.description = PatchableNullable.notGiven<string>();
   }
 
   apply(question: Question): void {
@@ -46,7 +46,7 @@ export class QuestionDelta {
     }
 
     this.title.apply(question, (q, v) => {
-      if (v != null) q.title = v;
+      q.title = v;
     });
     this.description.apply(question, (q, v) => {
       q.description = v;

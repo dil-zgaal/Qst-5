@@ -3,7 +3,6 @@
  */
 export interface UpdateCommand {
   type: string;
-  id: string;
 }
 
 /**
@@ -11,8 +10,8 @@ export interface UpdateCommand {
  */
 export interface UpdateQuestionnaireProperty extends UpdateCommand {
   type: 'updateProperty';
-  title?: string;
-  description?: string;
+  title: string;
+  description: string | null;
 }
 
 /**
@@ -28,13 +27,11 @@ export function isUpdateQuestionnaireProperty(
  * Factory function to create an UpdateQuestionnaireProperty command
  */
 export function createUpdateQuestionnaireProperty(
-  id: string,
-  title?: string,
-  description?: string
+  title: string,
+  description: string | null
 ): UpdateQuestionnaireProperty {
   return {
     type: 'updateProperty',
-    id,
     title,
     description,
   };

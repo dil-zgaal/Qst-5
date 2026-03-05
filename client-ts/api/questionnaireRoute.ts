@@ -13,8 +13,8 @@ export class QuestionnaireRoute {
     return this.baseUrl;
   }
 
-  update(id: string): string {
-    return `${this.baseUrl}/${encodeURIComponent(id)}`;
+  update(id: string, version: number): string {
+    return `${this.baseUrl}/${encodeURIComponent(id)}?version=${version}`;
   }
 
   delete(id: string): string {

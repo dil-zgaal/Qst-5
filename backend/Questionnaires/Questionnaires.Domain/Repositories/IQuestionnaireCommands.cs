@@ -9,9 +9,14 @@ namespace Questionnaires.Contract.Repositories;
 public interface IQuestionnaireCommands
 {
     /// <summary>
-    /// Store a command and return the new version number
+    /// Create a new command stream
     /// </summary>
-    Task<long> StoreCommandAsync(QuestionnaireId id, UpdateCommand command, CancellationToken cancellationToken = default);
+    Task<QuestionnaireDelta> CreateStreamAsync(QuestionnaireId id, UpdateQuestionnaireProperty command, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Store a command and return the new version number, or null if the stream does not exist (e.g. if the questionnaire was deleted)
+    /// </summary>
+    Task<long?> StoreCommandAsync(QuestionnaireId id, UpdateCommand command, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Get commands for a questionnaire within a version range
@@ -23,10 +28,18 @@ public interface IQuestionnaireCommands
         CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Store the effect (delta) of a command at a specific version.
-    /// This is a no-op if an effect has already been stored for this version.
+    /// Lock the next command without an effect for processing.
+    /// Returns the command, version, and a lock ID. Returns null if no commands need processing.
+    /// The lock has a timeout after which it will be automatically released.
     /// </summary>
-    Task StoreEffectAsync(QuestionnaireId id, long version, QuestionnaireDelta delta, CancellationToken cancellationToken = default);
+    Task<(long Version, UpdateCommand Command, Guid LockId)?> StartNextCommandAsync(QuestionnaireId id, TimeSpan leaseTimeout, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Complete the processing of a command by storing its effect (delta) at a specific version with a lock.
+    /// Only succeeds if the provided lockId matches the current lock.
+    /// Releases the lock after storing the effect.
+    /// </summary>
+    Task<bool> CompleteCommandAsync(QuestionnaireId id, long version, QuestionnaireDelta delta, Guid lockId, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Get the effect (delta) for a specific version

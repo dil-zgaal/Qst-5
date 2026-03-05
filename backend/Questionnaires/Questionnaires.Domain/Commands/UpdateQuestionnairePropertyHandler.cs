@@ -3,6 +3,7 @@ using Questionnaires.Contract.Commands;
 using Questionnaires.Contract.Models;
 using Questionnaires.Contract.Models.Commands;
 using Questionnaires.Services;
+using Core.Model.Delta;
 
 namespace Questionnaires.Handlers.Commands;
 
@@ -24,19 +25,17 @@ public class UpdateQuestionnairePropertyHandler : ICommandHandler<UpdateQuestion
         Questionnaire questionnaire,
         UpdateQuestionnaireProperty command)
     {
-        _logger.LogInformation("Handling UpdateQuestionnaireProperty command for questionnaire {Id}", id);
-
-        questionnaire.Title = command.Title ?? questionnaire.Title;
-        questionnaire.Description = command.Description ?? questionnaire.Description;
+        _logger.LogInformation("Handling UpdateQuestionnaireProperty command for questionnaire {Id} at version {Version}", id, questionnaire.Version);
 
         var delta = new QuestionnaireDelta
         {
             Id = questionnaire.Id,
-            Title = command.Title != null ? Patchable<string>.Set(questionnaire.Title) : Patchable<string>.NotGiven(),
-            Description = command.Description != null ? Patchable<string?>.Set(questionnaire.Description) : Patchable<string?>.NotGiven()
+            FromVersion = questionnaire.Version,
+            ToVersion = questionnaire.Version + 1,
+            UpdatedAt = DateTime.UtcNow,
+            Title = Patchable<string>.Set(command.Title),
+            Description = PatchableNullable<string>.Set(command.Description)
         };
-
-        _logger.LogInformation("Successfully handled UpdateQuestionnaireProperty command for questionnaire {Id}", id);
 
         return Task.FromResult(delta);
     }
